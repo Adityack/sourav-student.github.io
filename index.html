@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class 9 Computer Science Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease-in-out;
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .option-btn {
+            border: 2px solid #e5e7eb;
+            text-align: left;
+            justify-content: flex-start;
+        }
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        .option-btn.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+        .explanation {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .timer-bar {
+            transition: width 1s linear;
+        }
+        .level-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 1rem;
+        }
+        .level-btn.locked {
+            background-color: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+        }
+        .level-btn.unlocked {
+            background-color: #4f46e5;
+            color: white;
+        }
+        .level-btn.completed {
+            background-color: #10b981;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div id="quiz-container" class="card w-full max-w-3xl mx-auto p-6 md:p-10">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-2">Computer Science Quiz</h1>
+            <p id="start-message" class="text-gray-600 text-lg mb-8">Select a level to begin!</p>
+            <div id="level-selection-container" class="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                <!-- Level buttons will be injected here -->
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="flex justify-between items-center mb-6">
+                <div id="question-counter" class="text-lg font-semibold text-gray-700"></div>
+                <div id="timer" class="text-2xl font-bold text-indigo-600">60</div>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                <div id="timer-bar" class="bg-indigo-600 h-2.5 rounded-full timer-bar" style="width: 100%"></div>
+            </div>
+
+            <h2 id="question-text" class="text-2xl md:text-3xl font-semibold text-gray-800 mb-8"></h2>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Options will be injected here -->
+            </div>
+            
+            <div id="explanation-container" class="mt-8 hidden">
+                <div class="bg-gray-50 p-6 rounded-2xl explanation">
+                    <h3 id="explanation-title" class="text-xl font-bold mb-2"></h3>
+                    <p id="explanation-text" class="text-gray-700"></p>
+                </div>
+            </div>
+
+            <div class="mt-8 text-right">
+                <button id="next-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full text-lg btn hidden">
+                    Next
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden text-center">
+            <h1 id="results-title" class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Quiz Complete!</h1>
+            <p class="text-gray-600 text-2xl mb-2">Your Score:</p>
+            <div id="score" class="text-7xl font-bold text-indigo-600 mb-8"></div>
+            <div id="score-details" class="text-lg text-gray-600 mb-8"></div>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                 <button id="restart-btn" class="bg-indigo-600 text-white font-bold py-3 px-8 rounded-full text-xl btn">
+                    Try Again
+                </button>
+                <button id="back-to-levels-btn" class="bg-gray-500 text-white font-bold py-3 px-8 rounded-full text-xl btn">
+                    Back to Levels
+                </button>
+            </div>
+        </div>
+        
+        <footer class="text-center text-sm text-gray-400 mt-8 pt-4 border-t border-gray-200">
+            &copy; Sourav sir
+        </footer>
+    </div>
+
+    <script>
+        const allQuizData = [
+            // 300 questions total
+            { question: "What does ICT stand for?", options: ["Information and Computer Technology", "Information and Communication Technology", "Internal Communication Technology", "Internet and Computer Tools"], answer: "Information and Communication Technology", explanation: "ICT stands for Information and Communication Technology. It covers all devices and systems used to interact in the digital world." },
+            { question: "Which of the following is NOT a primary use of ICT at home?", options: ["Paying bills online", "Playing games", "Industrial manufacturing", "Watching movies"], answer: "Industrial manufacturing", explanation: "Industrial manufacturing is a use of ICT in the workplace, not typically at home. Home uses include entertainment, communication, and online services." },
+            { question: "What is the 'digital divide'?", options: ["A type of computer virus", "A gap between people who have and don't have access to technology", "A software for dividing files", "A new social media platform"], answer: "A gap between people who have and don't have access to technology", explanation: "The digital divide refers to the gap between those who can benefit from digital technology and those who cannot." },
+            { question: "Which device is designed primarily for reading e-books?", options: ["Tablet", "Smartphone", "E-reader", "Laptop"], answer: "E-reader", explanation: "An e-reader, like a Kindle, is a mobile electronic device specifically designed for reading digital books (e-books)." },
+            { question: "Which of these is considered a traditional ICT tool?", options: ["Radio", "Smartphone", "Interactive Whiteboard", "Social Networking App"], answer: "Radio", explanation: "While modern tools are digital, traditional technologies like radio and television are also part of ICT as they disseminate information." },
+            { question: "What does e-commerce refer to?", options: ["Sending emails", "Learning online", "Online shopping and business", "Creating websites"], answer: "Online shopping and business", explanation: "E-commerce involves buying and selling goods and services over the internet, including marketing, browsing, and order processing." },
+            { question: "Which technology is used by news agencies to collect and print news with greater efficiency?", options: ["Only Radio", "Only Television", "ICT", "Manual Typewriters"], answer: "ICT", explanation: "ICT helps news agencies to collect, collate, and print news efficiently. This includes using the internet, computers, and other digital tools." },
+            { question: "An Interactive Whiteboard (IWB) is also known as a:", options: ["Smartboard", "Blackboard", "Projector Screen", "Digital Canvas"], answer: "Smartboard", explanation: "An Interactive Whiteboard (IWB) is often called a Smartboard. It's a large display that connects to a computer to show interactive content." },
+            { question: "What is BHIM, as mentioned in the context of Digital India?", options: ["A government website", "An educational program", "A digital payments app", "A social media platform"], answer: "A digital payments app", explanation: "BHIM is a government-backed digital payments application that facilitates quick and easy online financial transactions." },
+            { question: "Which of these is a negative impact of ICT on society?", options: ["Easy access to information", "Improved communication", "The digital divide", "Online education"], answer: "The digital divide", explanation: "While ICT has many positive impacts, it has also created a 'digital divide', separating those with tech access from those without." },
+            { question: "What can be used to make video calls with friends and family?", options: ["E-reader", "Radio", "Webcam and Internet", "Printer"], answer: "Webcam and Internet", explanation: "A webcam, combined with an internet connection and a communication app, allows you to make video calls." },
+            { question: "Which of the following is an example of an online educational platform?", options: ["An e-commerce store", "A video conferencing app used for classes", "A music streaming service", "A word processing software"], answer: "A video conferencing app used for classes", explanation: "Online educational programs often use tools like video conferencing to conduct classes and training remotely." },
+            { question: "What technology allows you to pay bills without leaving your home?", options: ["E-banking", "E-reader", "E-mail", "E-commerce"], answer: "E-banking", explanation: "E-banking (Electronic Banking) allows you to perform financial transactions like paying bills online from anywhere." },
+            { question: "Which of these is NOT an ICT tool?", options: ["Mobile phone", "Television", "E-mail", "A physical book"], answer: "A physical book", explanation: "A physical book is a traditional medium of information but is not considered an electronic ICT tool." },
+            { question: "How does ICT help in healthcare?", options: ["Only by providing online news", "By assisting in diagnosis, treatment, and hospital management", "By selling books about health", "Only by allowing online shopping for medicine"], answer: "By assisting in diagnosis, treatment, and hospital management", explanation: "ICT plays a crucial role in healthcare, from managing hospital records to helping doctors diagnose and monitor patients." },
+            { question: "What are the three main components of a CPU?", options: ["RAM, ROM, and HDD", "ALU, CU, and MU", "Keyboard, Mouse, and Monitor", "Input, Output, and Storage"], answer: "ALU, CU, and MU", explanation: "The CPU (Central Processing Unit) consists of the Arithmetic and Logical Unit (ALU), the Control Unit (CU), and the Memory Unit (MU)." },
+            { question: "Which component of the CPU performs arithmetic and logical operations?", options: ["Memory Unit (MU)", "Control Unit (CU)", "Arithmetic and Logical Unit (ALU)", "Register"], answer: "Arithmetic and Logical Unit (ALU)", explanation: "The ALU is responsible for all mathematical calculations (like addition) and logical comparisons (like greater than)." },
+            { question: "What is the main function of the Control Unit (CU)?", options: ["To store data", "To perform calculations", "To control all other components of the computer", "To display output"], answer: "To control all other components of the computer", explanation: "The CU acts like the computer's nervous system, managing and coordinating the operations of all other hardware parts." },
+            { question: "Which type of memory is volatile, meaning its contents are lost when the power is off?", options: ["ROM", "RAM", "Hard Disk", "SSD"], answer: "RAM", explanation: "RAM (Random Access Memory) is volatile. It holds data temporarily while the computer is on and loses it when turned off." },
+            { question: "What does ROM stand for?", options: ["Read Only Memory", "Random Only Memory", "Run Only Memory", "Read on Mainframe"], answer: "Read Only Memory", explanation: "ROM is non-volatile memory that stores permanent instructions, like the code needed to boot up the computer." },
+            { question: "Which of these is an example of an Operating System?", options: ["Microsoft Word", "Google Chrome", "Windows 10", "Adobe Photoshop"], answer: "Windows 10", explanation: "Windows 10 is an operating system, which is system software that manages all the hardware and software on a computer." },
+            { question: "What is the purpose of an Antivirus software?", options: ["To create documents", "To browse the internet", "To protect the computer from viruses", "To manage files"], answer: "To protect the computer from viruses", explanation: "Antivirus is a type of utility software that scans for and removes malicious software (viruses) from your computer." },
+            { question: "A compiler is a type of...?", options: ["Hardware", "Application Software", "Language Processor", "Operating System"], answer: "Language Processor", explanation: "A compiler is a language processor that translates an entire program written in a high-level language into machine code all at once." },
+            { question: "Which of the following is Application Software?", options: ["Linux", "MS Excel", "BIOS", "Device Driver"], answer: "MS Excel", explanation: "MS Excel is application software designed for a specific task (creating spreadsheets). The others are types of system software." },
+            { question: "How many bits are in one byte?", options: ["4", "8", "16", "1024"], answer: "8", explanation: "A byte, the basic unit of computer storage, is made up of 8 bits." },
+            { question: "What does 1 Gigabyte (GB) equal to?", options: ["1024 Bytes", "1024 Kilobytes (KB)", "1024 Megabytes (MB)", "1024 Terabytes (TB)"], answer: "1024 Megabytes (MB)", explanation: "The units of memory scale up by a factor of 1024. So, 1 GB is equal to 1024 MB." },
+            { question: "What is Cache memory?", options: ["A type of permanent storage", "The main memory of the computer", "A small, very fast memory used by the CPU", "A type of software"], answer: "A small, very fast memory used by theCPU", explanation: "Cache is a special high-speed memory that the CPU uses to store frequently accessed instructions and data to improve performance." },
+            { question: "What is the smallest unit of memory in a computer?", options: ["Byte", "Nibble", "Bit", "KB"], answer: "Bit", explanation: "A Bit (Binary Digit) is the smallest unit of data in a computer. It can have a value of either 0 or 1." },
+            { question: "What does POST stand for in the computer startup process?", options: ["Power On Startup Test", "Power On Self Test", "Primary Online System Test", "Program On System Test"], answer: "Power On Self Test", explanation: "POST is a diagnostic test sequence that a computer's BIOS runs to check if the hardware is working correctly when it's turned on." },
+            { question: "Which software is designed to meet the specific needs of a user, like a reservation system?", options: ["General Purpose Software", "System Software", "Utility Software", "Customised Software"], answer: "Customised Software", explanation: "Customised (or Special Purpose) software is tailor-made for a specific user or organization, such as a billing system or a school management system." },
+            { question: "What is the function of an Interpreter?", options: ["Translates the whole program at once", "Translates and executes code line by line", "Manages computer hardware", "Protects against viruses"], answer: "Translates and executes code line by line", explanation: "An interpreter is a language processor that translates a program one line at a time and executes it immediately." },
+            { question: "Which of these is NOT a function of the Operating System?", options: ["Managing files and folders", "Controlling hardware devices", "Writing a school report", "Providing a user interface"], answer: "Writing a school report", explanation: "Writing a report is a task you do with application software (like MS Word). The OS manages the system in the background." },
+            { question: "What does BIOS stand for?", options: ["Basic Input Output System", "Binary Input Output Software", "Basic Integrated Operating System", "Binary Integrated Open Software"], answer: "Basic Input Output System", explanation: "BIOS is firmware stored on a chip on the motherboard that helps to initialize the hardware during the booting process." },
+            { question: "Tally and Busy are examples of what kind of software?", options: ["Operating Systems", "Gaming Software", "Accounting Software (Customised)", "Web Browsers"], answer: "Accounting Software (Customised)", explanation: "Tally and Busy are popular examples of special-purpose application software used for accounting." },
+            { question: "Which type of ROM can be erased by exposing it to ultraviolet light?", options: ["PROM", "EPROM", "EEPROM", "Flash Memory"], answer: "EPROM", explanation: "EPROM stands for Erasable Programmable Read-Only Memory. Its contents can be erased with UV light and then reprogrammed." },
+            { question: "Which of the following is an input device?", options: ["Monitor", "Printer", "Scanner", "Speakers"], answer: "Scanner", explanation: "A scanner is an input device used to convert physical documents or images into a digital format for the computer." },
+            { question: "Which device is also known as a Visual Display Unit (VDU)?", options: ["Printer", "Keyboard", "Monitor", "Mouse"], answer: "Monitor", explanation: "A monitor is the most common output device and is also referred to as a VDU." },
+            { question: "What type of printer works by spraying tiny droplets of ink onto paper?", options: ["Laser Printer", "Dot-Matrix Printer", "Inkjet Printer", "Thermal Printer"], answer: "Inkjet Printer", explanation: "Inkjet printers create images by precisely spraying small drops of ink. They are common for home and small office use." },
+            { question: "A Blu-ray disc can store significantly more data than a...", options: ["Hard Disk", "Flash Drive", "DVD", "RAM"], answer: "DVD", explanation: "A Blu-ray disc was developed to hold high-definition video and has a much larger storage capacity (25-50 GB) than a standard DVD (4.7 GB)." },
+            { question: "Which device is commonly used in gaming to control movement?", options: ["Scanner", "Joystick", "Webcam", "Microphone"], answer: "Joystick", explanation: "A joystick is an input device with a stick that pivots on a base, primarily used for playing video games." },
+            { question: "The printed output from a computer is called a...", options: ["Soft copy", "Hard copy", "Digital copy", "Screen copy"], answer: "Hard copy", explanation: "A hard copy is a physical printout of a document or image, while a soft copy is the digital version displayed on a screen." },
+            { question: "What is a Bar Code Reader used for?", options: ["Playing music", "Reading printed text from books", "Reading bar codes on products", "Drawing on a screen"], answer: "Reading bar codes on products", explanation: "A bar code reader is a scanner used to read the striped bar codes on products, often for billing and inventory in stores." },
+            { question: "Which of these is a type of non-impact printer?", options: ["Dot-Matrix Printer", "Daisy Wheel Printer", "Laser Printer", "Line Printer"], answer: "Laser Printer", explanation: "Non-impact printers, like laser and inkjet printers, print without physically striking the paper." },
+            { question: "What is another name for a Flash Drive?", options: ["Hard Drive", "CD-ROM", "Pen Drive", "Floppy Disk"], answer: "Pen Drive", explanation: "Flash drives are small, portable storage devices also commonly known as Pen Drives or Thumb Drives." },
+            { question: "Which monitor type is the thinnest and lightest?", options: ["CRT (Cathode Ray Tube)", "LCD (Liquid Crystal Display)", "LED (Light-Emitting Diode)", "Plasma Display"], answer: "LED (Light-Emitting Diode)", explanation: "LED monitors are an advancement over LCDs and are generally thinner, lighter, and more power-efficient." },
+            { question: "What does a plotter do?", options: ["Plays audio files", "Prints high-quality vector graphics like maps and blueprints", "Scans documents", "Records video"], answer: "Prints high-quality vector graphics like maps and blueprints", explanation: "A plotter is a specialized output device that draws high-quality images, diagrams, and maps using automated pens." },
+            { question: "Which storage device is made up of a collection of rotating disks called 'platters'?", options: ["SSD", "Hard Disk (HDD)", "Flash Drive", "Blu-ray Disc"], answer: "Hard Disk (HDD)", explanation: "A traditional Hard Disk Drive (HDD) stores data on magnetic platters that spin at high speeds." },
+            { question: "What does CD-RW stand for?", options: ["Compact Disc - Read Write", "Compact Disc - Rewritable", "Compact Disc - Read Once", "Compact Disc - Write Only"], answer: "Compact Disc - Rewritable", explanation: "A CD-RW is a type of compact disc that allows you to erase the data and write new data to it multiple times." },
+            { question: "A stylus is used with which input device?", options: ["Keyboard", "Mouse", "Graphics Tablet", "Joystick"], answer: "Graphics Tablet", explanation: "A stylus is a pen-shaped instrument used to draw or write on the surface of a graphics tablet or touchscreen." },
+            { question: "Which of these is NOT a peripheral device?", options: ["Printer", "CPU", "Webcam", "Monitor"], answer: "CPU", explanation: "The CPU (Central Processing Unit) is a core component of the computer, not a peripheral device that is attached externally." },
+            { question: "What are the tiny dots that make up a monitor's display called?", options: ["Pixels", "Bits", "Bytes", "Dots"], answer: "Pixels", explanation: "A digital image on a screen is made up of thousands or millions of tiny dots called pixels (picture elements)." },
+            { question: "Which printer type uses a powdered ink called 'toner'?", options: ["Inkjet", "Dot-Matrix", "Thermal", "Laser"], answer: "Laser", explanation: "Laser printers use a laser beam and a dry, powdered ink known as toner to produce high-quality prints quickly." },
+            { question: "What is the primary function of a microphone?", options: ["To display images", "To print documents", "To input sound into a computer", "To control a cursor"], answer: "To input sound into a computer", explanation: "A microphone is an input device that captures audio and converts it into a digital signal that a computer can store and process." },
+            { question: "Which device allows you to input information by touching icons on the screen?", options: ["A standard monitor", "A touch screen", "A plotter", "A scanner"], answer: "A touch screen", explanation: "A touch screen is both an input and output device that allows users to interact with the computer by touching the display directly." },
+            { question: "Which of these has the largest storage capacity?", options: ["CD-ROM", "DVD", "Blu-ray Disc", "Floppy Disk"], answer: "Blu-ray Disc", explanation: "Among optical discs, Blu-ray has the highest capacity, followed by DVD, and then CD." },
+            { question: "What are the three stages of the primary operations of a computer system?", options: ["Input-Process-Output", "Start-Work-Stop", "Type-Save-Print", "Hardware-Software-User"], answer: "Input-Process-Output", explanation: "Every computer function follows the basic cycle of receiving Input, Processing it, and then producing Output." },
+            { question: "What is the internet?", options: ["A single, large computer", "A software program", "A global system of interconnected computer networks", "A type of website"], answer: "A global system of interconnected computer networks", explanation: "The internet is a vast, worldwide network that connects millions of computers, allowing them to share information." },
+            { question: "What software is used to view websites?", options: ["Web Server", "Web Browser", "Web Page", "Web Host"], answer: "Web Browser", explanation: "A web browser, such as Google Chrome or Mozilla Firefox, is the application you use to access and view websites on the World Wide Web." },
+            { question: "What does WWW stand for?", options: ["World Wide Web", "World Web Wires", "Wide World Web", "Web World Wide"], answer: "World Wide Web", explanation: "WWW refers to the World Wide Web, which is the system of interlinked documents and web pages that you access via the internet." },
+            { question: "What does URL stand for?", options: ["Uniform Resource Locator", "Universal Resource Link", "Uniform Record Locator", "Universal Record Link"], answer: "Uniform Resource Locator", explanation: "A URL is the unique address for a file or resource on the internet, like 'http://www.google.com'." },
+            { question: "In an email address like 'user@example.com', what is the part after the '@' symbol called?", options: ["User Name", "Password", "Domain Name", "Protocol"], answer: "Domain Name", explanation: "The domain name (e.g., 'example.com') identifies the website or service provider of the email account." },
+            { question: "What does 'Cc' stand for in an email?", options: ["Carbon copy", "Creative copy", "Computer code", "Corrected copy"], answer: "Carbon copy", explanation: "'Cc' allows you to send a copy of the email to other recipients. Everyone can see who was Cc'd." },
+            { question: "What is the first page of a website called?", options: ["Main Page", "Start Page", "Home Page", "First Page"], answer: "Home Page", explanation: "The home page is the main or introductory page of a website, which usually contains links to other pages on the site." },
+            { question: "What does HTTP stand for?", options: ["HyperText Transfer Protocol", "HyperText Transmission Protocol", "Hyperlink Text Transfer Page", "HyperText Transfer Page"], answer: "HyperText Transfer Protocol", explanation: "HTTP is the set of rules (protocol) used for transferring files, such as text, images, and other multimedia, on the World Wide Web." },
+            { question: "What is 'spamming' in the context of the internet?", options: ["A type of computer virus", "Sending unsolicited or junk email", "Hacking into a computer system", "Creating a website"], answer: "Sending unsolicited or junk email", explanation: "Spamming is the act of sending unwanted messages, typically for advertising, to a large number of people." },
+            { question: "What is the purpose of the 'Bcc' field in an email?", options: ["To attach a big file", "To send a copy to someone without other recipients knowing", "To check for viruses", "To format the text"], answer: "To send a copy to someone without other recipients knowing", explanation: "'Bcc' stands for Blind Carbon Copy. It lets you send a copy of an email to someone secretly; other recipients won't see the Bcc'd address." },
+            { question: "A collection of related web pages under a single domain name is called a...", options: ["Web Browser", "Website", "Web Server", "URL"], answer: "Website", explanation: "A website is a collection of linked web pages and other content that are all hosted under one domain name." },
+            { question: "Which of these is a major advantage of email?", options: ["It is always secure", "It is very fast and economical", "It can never be used for scams", "It does not require an internet connection"], answer: "It is very fast and economical", explanation: "Email is a very fast and low-cost way to communicate with people anywhere in the world." },
+            { question: "What do you need to send and receive emails?", options: ["Only a computer", "An email address and internet access", "A printer", "A web server"], answer: "An email address and internet access", explanation: "To use email, you must have your own unique email address and a connection to the internet." },
+            { question: "What is a 'hyperlink'?", options: ["A type of computer hardware", "A link from one web page to another", "A security feature", "An email attachment"], answer: "A link from one web page to another", explanation: "A hyperlink, or simply a link, is an element on a web page that you can click to jump to another document or page." },
+            { question: "What is a protocol on the internet?", options: ["A type of software", "A hardware device", "A standard set of rules for communication", "A type of web page"], answer: "A standard set of rules for communication", explanation: "A protocol is a set of rules that governs how data is exchanged between devices on a network." },
+            { question: "Which of these is NOT a popular web browser?", options: ["Google Chrome", "Microsoft Word", "Mozilla Firefox", "Safari"], answer: "Microsoft Word", explanation: "Microsoft Word is a word processing application, not a web browser used for viewing websites." },
+            { question: "What is the 'Inbox' in an email account?", options: ["Where you write new emails", "Where sent emails are stored", "Where received emails are displayed", "Where deleted emails go"], answer: "Where received emails are displayed", explanation: "The Inbox is the main folder in your email account that shows all the messages you have received." },
+            { question: "How can you send a photo in an email?", options: ["By typing the photo's name", "By attaching the photo file to the email", "By describing the photo in the subject line", "It is not possible to send photos via email"], answer: "By attaching the photo file to the email", explanation: "Email services have an 'attach file' feature that allows you to include files like documents, photos, and videos with your message." },
+            { question: "A dynamic web page is one that...", options: ["Never changes", "Has a lot of text", "Can display different content for different users or times", "Only contains images"], answer: "Can display different content for different users or times", explanation: "Unlike a static page, a dynamic web page is generated on-the-fly and its content can change based on user interaction or other factors." },
+            { question: "What is the primary role of ICT in education?", options: ["To replace teachers", "To make learning more interactive and accessible", "To only provide games for students", "To print textbooks"], answer: "To make learning more interactive and accessible", explanation: "ICT in education is used to enhance the learning process by providing access to vast resources, interactive content, and online collaboration tools." },
+            { question: "Which of these is a utility software?", options: ["MS PowerPoint", "A video game", "Disk Defragmenter", "A music player"], answer: "Disk Defragmenter", explanation: "Disk Defragmenter is a utility program that helps manage the computer system by reorganizing files on a disk to improve performance." },
+            { question: "What is the function of RAM?", options: ["To store data permanently", "To hold data and instructions that are currently in use", "To start the computer", "To connect to the internet"], answer: "To hold data and instructions that are currently in use", explanation: "RAM is the computer's working memory. It temporarily holds the data for the operating system and the applications you are currently running." },
+            { question: "Which device converts digital signals into a form that can be displayed on a screen?", options: ["CPU", "Monitor", "RAM", "Hard Drive"], answer: "Monitor", explanation: "The monitor is an output device that takes the digital video signal from the computer and displays it as a visual image." },
+            { question: "What is the purpose of a file compression utility like WinZip?", options: ["To make files larger", "To shrink files to occupy less disk space", "To delete files permanently", "To scan files for viruses"], answer: "To shrink files to occupy less disk space", explanation: "Compression utilities reduce the size of files, which is useful for saving storage space and for sending them faster over the internet." },
+            { question: "Which part of a computer is often called its 'brain'?", options: ["Monitor", "RAM", "Hard Drive", "CPU"], answer: "CPU", explanation: "The CPU (Central Processing Unit) is called the brain of the computer because it performs most of the processing and controls all the operations." },
+            { question: "Which of these is an example of an input device that uses a stylus?", options: ["Webcam", "Graphics Tablet", "Printer", "Speaker"], answer: "Graphics Tablet", explanation: "A graphics tablet is an input device that allows a user to hand-draw images and graphics, similar to the way a person draws images with a pencil and paper, using a stylus." },
+            { question: "What does 'e-governance' mean?", options: ["A new type of government", "Providing government services online", "A game about ruling a country", "A government-owned email service"], answer: "Providing government services online", explanation: "E-governance refers to the use of ICT to provide government services, exchange information, and interact with citizens online." },
+            { question: "What is the difference between an interpreter and a compiler?", options: ["There is no difference", "A compiler is hardware, an interpreter is software", "An interpreter translates line by line; a compiler translates the whole program at once", "An interpreter is faster than a compiler"], answer: "An interpreter translates line by line; a compiler translates the whole program at once", explanation: "Both are language processors, but an interpreter works line-by-line, while a compiler translates the entire program before execution." },
+            { question: "Which type of printer is generally the fastest and produces the highest quality text?", options: ["Inkjet", "Dot-Matrix", "Laser", "Thermal"], answer: "Laser", explanation: "Laser printers are known for their high speed and excellent print quality, especially for text, making them ideal for office environments." },
+            { question: "What is the main advantage of a Blu-ray disc over a DVD?", options: ["It is smaller in size", "It has a much higher storage capacity", "It is cheaper", "It can be read by any CD drive"], answer: "It has a much higher storage capacity", explanation: "The key advantage of Blu-ray is its ability to store large amounts of data, which is necessary for high-definition video." },
+            { question: "The physical components of a computer that you can touch are called:", options: ["Software", "Hardware", "Firmware", "Operating Systems"], answer: "Hardware", explanation: "Hardware refers to all the physical parts of a computer system, such as the keyboard, mouse, monitor, and internal components." },
+            { question: "Which of these is NOT a type of scanner?", options: ["Flatbed", "Drum", "Handheld", "Laserjet"], answer: "Laserjet", explanation: "LaserJet is a brand name for laser printers made by HP. Flatbed, drum, and handheld are all types of scanners." },
+            { question: "What does 'rpm' stand for when talking about a hard disk?", options: ["Reads per minute", "Rotations per minute", "Revolutions per megabyte", "Reads per megabyte"], answer: "Rotations per minute", explanation: "RPM measures the speed at which the platters inside a hard disk drive spin. A higher RPM generally means faster data access." },
+            { question: "Which of these is a type of secondary storage?", options: ["RAM", "Cache Memory", "Register", "Hard Disk Drive"], answer: "Hard Disk Drive", explanation: "Secondary storage, like a Hard Disk Drive (HDD), is non-volatile and used for long-term storage of data. RAM, Cache, and Registers are primary, volatile memory." },
+            { question: "What is the purpose of the 'Forward' option in an email client?", options: ["To reply to the sender", "To delete the email", "To send a received email to a new recipient", "To save the email"], answer: "To send a received email to a new recipient", explanation: "The forward feature allows you to take an email you've received and pass it along to other people." },
+            { question: "Which part of the URL 'https://www.example.com' identifies the protocol?", options: ["https", "www", "example.com", ".com"], answer: "https", explanation: "'https' (Hypertext Transfer Protocol Secure) is the protocol part of the URL, telling the browser how to communicate with the server." },
+            { question: "A group of 4 bits is known as a:", options: ["Byte", "Word", "Nibble", "Bit-group"], answer: "Nibble", explanation: "A nibble is a four-bit aggregation, or half of an eight-bit byte. It's a less common unit but is used in computing." },
+            { question: "Which of these is NOT a function of a computer mouse?", options: ["Pointing at items", "Clicking on icons", "Typing text", "Scrolling up and down a page"], answer: "Typing text", explanation: "Typing text is the primary function of a keyboard. A mouse is used for pointing, clicking, and scrolling." },
+            { question: "What is firmware?", options: ["A type of hardware", "A type of application software", "Software permanently programmed into a hardware device", "A computer virus"], answer: "Software permanently programmed into a hardware device", explanation: "Firmware is a specific class of software that provides low-level control for a device's specific hardware. BIOS is an example of firmware." },
+            
+            // Original new 100 questions
+            { question: "What does the acronym ALU stand for?", options: ["Automated Logic Unit", "Arithmetic Logic Unit", "Advanced Language Unit", "Application Logic Unit"], answer: "Arithmetic Logic Unit", explanation: "ALU stands for Arithmetic Logic Unit, the part of the CPU that handles all arithmetic and logical operations." },
+            { question: "Which type of software manages the computer's hardware and provides services for computer programs?", options: ["Application Software", "Utility Software", "System Software", "Firmware"], answer: "System Software", explanation: "System software, like an operating system, is the foundation that manages hardware resources and allows other software to run." },
+            { question: "A light pen is what type of device?", options: ["Output", "Storage", "Input", "Processing"], answer: "Input", explanation: "A light pen is a light-sensitive input device used to select items or draw on a computer screen." },
+            { question: "Which of these storage units is the largest?", options: ["Terabyte (TB)", "Gigabyte (GB)", "Megabyte (MB)", "Kilobyte (KB)"], answer: "Terabyte (TB)", explanation: "The units of storage increase in size: Kilobyte, Megabyte, Gigabyte, Terabyte. A Terabyte is the largest among the options." },
+            { question: "What is the main purpose of a web server?", options: ["To view websites", "To host websites and deliver their content to users", "To create websites", "To connect to the internet"], answer: "To host websites and deliver their content to users", explanation: "A web server is a computer that stores website files and makes them available to users' web browsers upon request." },
+            { question: "Which printer type uses heat to create an image on special paper?", options: ["Inkjet", "Laser", "Dot-Matrix", "Thermal"], answer: "Thermal", explanation: "Thermal printers use heated pins to 'burn' an image onto special heat-sensitive paper, often used for receipts." },
+            { question: "What does 'booting' a computer mean?", options: ["Shutting it down", "Starting it up", "Installing software", "Connecting to the internet"], answer: "Starting it up", explanation: "Booting is the process of starting a computer, during which the operating system is loaded into RAM." },
+            { question: "Which of the following is NOT a type of RAM?", options: ["DRAM", "SRAM", "FRAM", "SDRAM"], answer: "FRAM", explanation: "While DRAM, SRAM, and SDRAM are common types of RAM, FRAM (Ferroelectric RAM) is a different, less common type of non-volatile memory." },
+            { question: "What is a 'domain extension' in an email address (e.g., .com, .gov)?", options: ["The user's name", "The name of the email provider", "It indicates the type of organization", "A security code"], answer: "It indicates the type of organization", explanation: "The domain extension gives a clue about the type of organization hosting the email, such as .com for commercial, .edu for education, or .gov for government." },
+            { question: "Which device is essential for both video conferencing and video calls?", options: ["Printer", "Scanner", "Webcam", "Plotter"], answer: "Webcam", explanation: "A webcam is a small digital video camera that captures video, making it essential for live video communication over the internet." },
+            { question: "What is the primary characteristic of a static web page?", options: ["It changes every time you view it", "Its content remains the same for all users", "It requires a password to view", "It can only be viewed on a specific browser"], answer: "Its content remains the same for all users", explanation: "A static web page delivers the exact same content to every user, as opposed to a dynamic page which can be personalized." },
+            { question: "Which component is known as the 'central nervous system' of the computer?", options: ["ALU", "Memory Unit", "Control Unit", "Hard Drive"], answer: "Control Unit", explanation: "The Control Unit (CU) is called the central nervous system because it directs and manages the operations of all other parts of the computer." },
+            { question: "A handheld scanner is most similar in function to a:", options: ["Printer", "Mouse", "Bar Code Reader", "Monitor"], answer: "Bar Code Reader", explanation: "A bar code reader is a type of handheld scanner specifically designed to read bar codes." },
+            { question: "Which memory type is non-volatile and can be electronically erased and reprogrammed?", options: ["RAM", "ROM", "EPROM", "EEPROM"], answer: "EEPROM", explanation: "EEPROM (Electronically Erasable Programmable Read-Only Memory) is a non-volatile memory that can be modified electronically, making it more flexible than EPROM." },
+            { question: "What does 'cyber terrorism' refer to?", options: ["Sending spam emails", "Using the internet to conduct violent acts", "Wasting time online", "Illegally downloading movies"], answer: "Using the internet to conduct violent acts", explanation: "Cyber terrorism involves using the internet and computer networks to cause destruction and harm for political or social objectives." },
+            { question: "Which of these is a 'General Purpose Application Software'?", options: ["A payroll system", "A reservation system", "A word processor (like MS Word)", "An inventory control system"], answer: "A word processor (like MS Word)", explanation: "A word processor is general-purpose software because it can be used for many different tasks by a wide range of users, unlike specialized systems." },
+            { question: "What is the function of a 'File Manager' utility?", options: ["To check network speed", "To compress files", "To help users view, edit, copy, and delete files", "To scan for viruses"], answer: "To help users view, edit, copy, and delete files", explanation: "A file manager provides a user interface to work with file systems, allowing for the management of files and folders." },
+            { question: "Which monitor technology uses a combination of Red, Green, and Blue phosphor dots?", options: ["LCD", "LED", "OLED", "CRT"], answer: "CRT", explanation: "Cathode Ray Tube (CRT) monitors create images by firing electron beams at a screen coated with red, green, and blue phosphors." },
+            { question: "What is the purpose of a 'backup' utility?", options: ["To erase data", "To store a copy of data in case of loss", "To speed up the computer", "To manage disk drives"], answer: "To store a copy of data in case of loss", explanation: "Backup software creates copies of your important data so it can be restored if the original files are lost or damaged." },
+            { question: "An assembler is used to translate what language into machine code?", options: ["Java", "C++", "Assembly Language", "Python"], answer: "Assembly Language", explanation: "An assembler is a specific type of translator that converts low-level assembly language into machine code." },
+            { question: "Which of these is NOT an advantage of e-mail?", options: ["Instant delivery", "Low cost", "Guaranteed protection from viruses", "Ability to attach files"], answer: "Guaranteed protection from viruses", explanation: "While email is fast and cheap, it is a common way for viruses and malware to spread, so it is not inherently safe." },
+            { question: "What does a 'drum plotter' use to create an image?", options: ["A laser beam", "A flat surface and a moving pen", "A rotating drum and a moving pen", "Sprayed ink droplets"], answer: "A rotating drum and a moving pen", explanation: "A drum plotter, or roller plotter, creates an image by rotating a drum with paper on it while a pen moves horizontally." },
+            { question: "What is the term for the raw, unorganized facts and figures entered into a computer?", options: ["Information", "Output", "Process", "Data"], answer: "Data", explanation: "Data is the raw input that is given to a computer. After it is processed, it becomes meaningful information." },
+            { question: "Which of these is a key feature of a tablet computer?", options: ["It has a physical keyboard attached", "It primarily uses a mouse for input", "It has a touch screen interface", "It cannot connect to the internet"], answer: "It has a touch screen interface", explanation: "The defining feature of a tablet is its large touch screen, which serves as the primary method of input and navigation." },
+            { question: "What does 'backward compatibility' mean for a Blu-ray player?", options: ["It can play future disc formats", "It can play older formats like DVDs", "It can only play Blu-ray discs", "It can record onto discs"], answer: "It can play older formats like DVDs", explanation: "Backward compatibility means the new device (Blu-ray player) is able to use media from an older system (DVDs)." },
+            { question: "Which of the following is a logical operation performed by the ALU?", options: ["Addition (+)", "Multiplication (*)", "Division (/)", "Greater Than (>)"], answer: "Greater Than (>)", explanation: "Logical operations involve comparisons, such as checking if one value is greater than, less than, or equal to another." },
+            { question: "What is the main function of a 'register' in a CPU?", options: ["To store large amounts of data permanently", "To hold a small amount of data or an instruction for quick access", "To cool down the CPU", "To connect the CPU to the motherboard"], answer: "To hold a small amount of data or an instruction for quick access", explanation: "Registers are the fastest type of memory, located directly on the CPU, used to temporarily hold data and instructions being processed." },
+            { question: "Which of these is a type of impact printer?", options: ["Inkjet Printer", "Laser Printer", "Thermal Printer", "Dot-Matrix Printer"], answer: "Dot-Matrix Printer", explanation: "Impact printers, like dot-matrix printers, work by physically striking an ink ribbon against the paper to form characters." },
+            { question: "What is the primary memory of a computer also known as?", options: ["Secondary Memory", "External Memory", "Auxiliary Memory", "Internal Memory"], answer: "Internal Memory", explanation: "Primary memory (RAM and ROM) is also called internal memory because it is located inside the computer, directly accessible by the CPU." },
+            { question: "Which of these is NOT a valid domain extension?", options: [".com", ".edu", ".org", ".web"], answer: ".web", explanation: ".com (commercial), .edu (education), and .org (organization) are common top-level domains. .web is not a standard, widely used extension." },
+            { question: "The speed of a CPU is commonly measured in:", options: ["Bytes per second (Bps)", "Dots per inch (DPI)", "Gigahertz (GHz)", "Pages per minute (PPM)"], answer: "Gigahertz (GHz)", explanation: "CPU speed, or clock rate, is measured in cycles per second. Modern CPUs have speeds measured in Gigahertz (billions of cycles per second)." },
+            { question: "Which type of software is Adobe Photoshop?", options: ["Operating System", "Utility Software", "Graphics Software", "Database Software"], answer: "Graphics Software", explanation: "Adobe Photoshop is a powerful application software specifically designed for editing and creating graphics and images." },
+            { question: "What does 'Disk Management' utility allow you to do?", options: ["Browse the internet", "Send emails", "Partition and format drives", "Write documents"], answer: "Partition and format drives", explanation: "Disk Management is a system utility for managing hard disks and the volumes or partitions that they contain." },
+            { question: "What is the purpose of the 'Subject' line in an email?", options: ["To enter the recipient's address", "To provide a brief summary of the email's content", "To attach a file", "To write the main message"], answer: "To provide a brief summary of the email's content", explanation: "The subject line gives the recipient a quick idea of what the email is about before they open it." },
+            { question: "Which part of the computer system actually executes program instructions?", options: ["RAM", "Hard Drive", "CPU", "Monitor"], answer: "CPU", explanation: "The Central Processing Unit (CPU) is responsible for fetching, decoding, and executing instructions from computer programs." },
+            { question: "A 'trackball' is an alternative to which common input device?", options: ["Keyboard", "Mouse", "Scanner", "Microphone"], answer: "Mouse", explanation: "A trackball is a pointing device consisting of a ball held by a socket, which can be rotated to move the cursor on the screen, similar to an upside-down mouse." },
+            { question: "Which type of ROM is programmed at the time of manufacturing and cannot be changed?", options: ["PROM", "EPROM", "EEPROM", "Masked ROM"], answer: "Masked ROM", explanation: "Masked ROM is a type of read-only memory whose contents are programmed by the IC manufacturer during production and cannot be changed by the user." },
+            { question: "What does 'social networking' primarily involve?", options: ["Shopping online", "Building online communities to share information and interests", "Fixing computer hardware", "Writing computer programs"], answer: "Building online communities to share information and interests", explanation: "Social networking services allow users to connect with others, share content, and participate in online communities." },
+            { question: "Which of these is considered 'multimedia software'?", options: ["MS Excel", "Antivirus", "Windows Media Player", "File Explorer"], answer: "Windows Media Player", explanation: "Multimedia software is designed to play or display various media types, such as audio (music) and video (movies)." },
+            { question: "What does a 'flatbed plotter' do?", options: ["It uses a rotating drum", "It plots on paper fixed over a rectangular flat table", "It scans 3D objects", "It prints using heat"], answer: "It plots on paper fixed over a rectangular flat table", explanation: "A flatbed plotter, also known as a table plotter, draws on paper that is spread out and fixed on a flat surface." },
+            { question: "What is the process of converting a program from a high-level language to machine language called?", options: ["Execution", "Debugging", "Compilation or Interpretation", "Booting"], answer: "Compilation or Interpretation", explanation: "Language processors like compilers and interpreters are used to translate human-readable high-level code into binary machine code that the CPU can understand." },
+            { question: "Which of these is a benefit of using ICT in business?", options: ["It increases paperwork", "It slows down communication", "It facilitates e-commerce and improves communication", "It only works for large companies"], answer: "It facilitates e-commerce and improves communication", explanation: "ICT is vital for modern business, enabling online sales (e-commerce), instant communication (email, video conferencing), and efficient data management." },
+            { question: "What is a 'cylinder' in the context of a hard disk?", options: ["The outer case of the disk", "A single circular path on a platter", "A set of tracks at the same position on all platters", "The motor that spins the platters"], answer: "A set of tracks at the same position on all platters", explanation: "A cylinder is a vertical collection of tracks in the same location on each platter of a hard disk, which allows for more efficient data access." },
+            { question: "Which of these is NOT a physical component of a computer?", options: ["Motherboard", "Operating System", "Power Supply", "RAM"], answer: "Operating System", explanation: "The Operating System is software, a set of programs. The motherboard, power supply, and RAM are all physical hardware components." },
+            { question: "What does 'platter' refer to in a computer?", options: ["A type of software", "The circular disk inside a hard drive where data is stored", "A part of the printer", "The screen of a monitor"], answer: "The circular disk inside a hard drive where data is stored", explanation: "Platters are the rigid, circular disks coated with magnetic material inside a Hard Disk Drive (HDD) that hold the stored data." },
+            { question: "What is the main difference between a CD-R and a CD-RW?", options: ["Their storage capacity", "Their physical size", "CD-R can be written to once, while CD-RW is rewritable", "CD-R is faster than CD-RW"], answer: "CD-R can be written to once, while CD-RW is rewritable", explanation: "CD-R (Recordable) allows you to write data one time, whereas CD-RW (Rewritable) allows you to erase and write new data multiple times." },
+            { question: "What is the purpose of 'Flash Memory'?", options: ["It's a type of very slow, permanent storage", "It's a non-volatile memory that can be erased and reprogrammed in blocks", "It's a type of volatile memory for the CPU", "It's used to cool the computer"], answer: "It's a non-volatile memory that can be erased and reprogrammed in blocks", explanation: "Flash memory, used in USB drives and SSDs, is non-volatile (keeps data without power) and allows for fast erasing and rewriting of data in large blocks." },
+            { question: "Which of these tasks would you perform with a 'Database Management System' (DBMS)?", options: ["Creating a presentation", "Editing a photo", "Organizing and managing large amounts of structured data", "Playing a game"], answer: "Organizing and managing large amounts of structured data", explanation: "A DBMS like MS Access or Oracle is specialized software for creating, managing, and querying large, organized collections of data (databases)." },
+            { question: "What does 'VDU' stand for?", options: ["Video Display Unit", "Virtual Digital Unit", "Variable Display Utility", "Video Digital Utility"], answer: "Video Display Unit", explanation: "VDU, or Video Display Unit, is another term for a computer monitor or screen." },
+            { question: "Which of these is an example of an 'output device'?", options: ["Keyboard", "Mouse", "Speakers", "Microphone"], answer: "Speakers", explanation: "Speakers are output devices because they take a digital signal from the computer and convert it into audible sound (output)." },
+            { question: "What is the term for a unique address that identifies a resource on the web?", options: ["IP Address", "MAC Address", "URL", "Homepage"], answer: "URL", explanation: "A URL (Uniform Resource Locator) is the specific address used to locate a resource, like a webpage or a file, on the internet." },
+            { question: "Which type of computer memory is fastest?", options: ["RAM", "Hard Disk", "Cache", "Register"], answer: "Register", explanation: "Registers are the smallest and fastest memory units, located directly on the CPU chip itself for immediate processing." },
+            { question: "What is the primary function of a 'modem'?", options: ["To display graphics", "To modulate and demodulate signals for internet connection over phone lines", "To print documents", "To store files"], answer: "To modulate and demodulate signals for internet connection over phone lines", explanation: "A modem converts digital signals from a computer into analog signals for transmission over phone lines and vice versa, enabling internet connectivity." },
+            { question: "Which of the following best describes 'software'?", options: ["Any physical part of a computer", "A set of instructions that tells the hardware what to do", "The main circuit board of a computer", "A storage device"], answer: "A set of instructions that tells the hardware what to do", explanation: "Software is a collection of programs, data, and instructions that directs the computer's hardware to perform tasks." },
+            { question: "What does 'DPI' stand for in the context of printers?", options: ["Dots Per Inch", "Data Per Inch", "Digital Print Imaging", "Disk Power Input"], answer: "Dots Per Inch", explanation: "DPI is a measure of a printer's resolution, indicating how many dots of ink it can place in a one-inch line." },
+            { question: "In the IPO cycle, what does 'Process' refer to?", options: ["Entering data with a keyboard", "The CPU working on the input", "Displaying results on a monitor", "Saving a file to the hard drive"], answer: "The CPU working on the input", explanation: "Processing is the stage where the CPU manipulates the input data according to program instructions to produce a meaningful result." },
+            { question: "Which of these is a 'pointing device'?", options: ["Keyboard", "Printer", "Mouse", "Scanner"], answer: "Mouse", explanation: "A mouse is the most common pointing device used to control the cursor on a graphical user interface." },
+            { question: "What is the main purpose of an 'operating system'?", options: ["To write letters", "To browse the web", "To act as an interface between the user and the hardware", "To create spreadsheets"], answer: "To act as an interface between the user and the hardware", explanation: "The operating system manages all computer hardware and software, providing the platform for applications to run and for users to interact with the computer." },
+            { question: "Which of these is NOT a type of computer memory?", options: ["RAM", "ROM", "CPU", "Cache"], answer: "CPU", explanation: "The CPU (Central Processing Unit) is the processor, not a type of memory. RAM, ROM, and Cache are all forms of computer memory." },
+            { question: "What is the function of the 'delete' key on a keyboard?", options: ["To insert a space", "To capitalize letters", "To remove characters", "To move the cursor"], answer: "To remove characters", explanation: "The delete key is used to erase text or other selected objects." },
+            { question: "Which of these is an example of a 'multimedia' file?", options: ["A plain text document", "A video with sound", "A computer program", "A system log"], answer: "A video with sound", explanation: "Multimedia refers to content that uses a combination of different forms, such as text, audio, images, and video." },
+            { question: "What is the purpose of 'cookies' on the internet?", options: ["To protect from viruses", "To store small pieces of information from websites on your computer", "To speed up your internet connection", "To block advertisements"], answer: "To store small pieces of information from websites on your computer", explanation: "Cookies are small files that websites save on your computer to remember your preferences, login status, and other information." },
+            { question: "Which of these is a characteristic of a 'daisy wheel' printer?", options: ["It is very fast and quiet", "It produces letter-quality text but is slow and noisy", "It uses a laser to print", "It sprays ink onto the page"], answer: "It produces letter-quality text but is slow and noisy", explanation: "Daisy wheel printers were an early type of impact printer that produced high-quality text but were known for being very slow and loud." },
+            { question: "What is the 'Recycle Bin' or 'Trash' on a computer?", options: ["A place to permanently store files", "A temporary holding area for deleted files", "A program for cleaning the computer", "A hardware component"], answer: "A temporary holding area for deleted files", explanation: "When you delete a file, it is usually moved to the Recycle Bin or Trash, from where it can be restored or permanently deleted." },
+            { question: "Which of these would be considered 'system software'?", options: ["A video game", "A web browser", "A device driver", "A photo editor"], answer: "A device driver", explanation: "A device driver is a type of system software that allows the operating system to communicate with and control a specific hardware device." },
+            { question: "What is the main advantage of an SSD over an HDD?", options: ["It has a larger capacity", "It is much cheaper", "It has no moving parts and is much faster", "It uses optical discs"], answer: "It has no moving parts and is much faster", explanation: "A Solid-State Drive (SSD) uses flash memory, has no moving parts, and offers significantly faster data access speeds than a traditional Hard Disk Drive (HDD)." },
+            { question: "What does 'GUI' stand for?", options: ["Graphical User Interface", "General Utility Interface", "Gaming User Input", "Global User Identifier"], answer: "Graphical User Interface", explanation: "A GUI allows users to interact with electronic devices through graphical icons and visual indicators, as opposed to text-based command lines." },
+            { question: "Which of these is a threat to internet security?", options: ["Using a strong password", "Updating your software regularly", "Phishing attacks", "Using a firewall"], answer: "Phishing attacks", explanation: "Phishing is a cybercrime where attackers attempt to trick people into giving up sensitive information like passwords or credit card numbers." },
+            { question: "What is the function of a 'firewall'?", options: ["To cool the computer", "To monitor and control incoming and outgoing network traffic", "To increase internet speed", "To store passwords"], answer: "To monitor and control incoming and outgoing network traffic", explanation: "A firewall acts as a barrier between a trusted network and an untrusted network (like the internet), blocking unauthorized access while permitting outward communication." },
+            { question: "What is 'open-source' software?", options: ["Software that is very expensive", "Software that is free to use and whose source code is available to modify", "Software that has not been released yet", "Software that only works on one type of computer"], answer: "Software that is free to use and whose source code is available to modify", explanation: "Open-source software makes its source code publicly available, allowing anyone to view, modify, and distribute it." },
+            { question: "What is a 'pixel'?", options: ["A type of computer virus", "The smallest controllable element of a picture on a screen", "A unit of processing speed", "A type of memory"], answer: "The smallest controllable element of a picture on a screen", explanation: "A pixel (picture element) is the tiny dot of color that is the fundamental building block of all images on a digital display." },
+            { question: "Which of these is a primary function of the motherboard?", options: ["To store all user files", "To connect all the main components of the computer together", "To display images", "To perform calculations"], answer: "To connect all the main components of the computer together", explanation: "The motherboard is the main circuit board that holds and allows communication between many of the crucial electronic components of a system, such as the CPU and memory." },
+            
+            // Final new 100 questions
+            { question: "In computing, what is a 'bug'?", options: ["A feature of the software", "An error or flaw in a computer program", "A type of hardware component", "A security protocol"], answer: "An error or flaw in a computer program", explanation: "A bug is an error, flaw, or fault in a computer program or system that causes it to produce an incorrect or unexpected result." },
+            { question: "What is 'cloud computing'?", options: ["Storing data on your personal computer", "Using a network of remote servers hosted on the Internet to store, manage, and process data", "A type of weather forecasting software", "A new type of laptop"], answer: "Using a network of remote servers hosted on the Internet to store, manage, and process data", explanation: "Cloud computing involves delivering computing services—including servers, storage, databases, networking, software—over the Internet ('the cloud')." },
+            { question: "Which programming language is machine code represented in?", options: ["Java", "Python", "Binary (0s and 1s)", "C++"], answer: "Binary (0s and 1s)", explanation: "Machine code is the lowest-level programming language, consisting of binary digits (bits) that the computer's CPU can execute directly." },
+            { question: "What does the term 'upload' mean?", options: ["To receive data from a remote system", "To send data from a local system to a remote system", "To install a new program", "To delete a file"], answer: "To send data from a local system to a remote system", explanation: "Uploading is the process of transferring data, such as a file or photo, from your computer to a central server or another computer." },
+            { question: "What is an 'IP Address'?", options: ["A physical address of a computer", "A unique string of numbers that identifies each computer using the Internet Protocol", "A type of computer memory", "A software license key"], answer: "A unique string of numbers that identifies each computer using the Internet Protocol", explanation: "An IP address serves as a unique identifier for a device on a network, allowing for the routing of data to the correct destination." },
+            { question: "Which of these is an example of 'malware'?", options: ["Operating System", "Web Browser", "Computer Virus", "Word Processor"], answer: "Computer Virus", explanation: "Malware (malicious software) is any software intentionally designed to cause damage to a computer, server, client, or computer network. Viruses are a common type of malware." },
+            { question: "What is the function of a 'search engine'?", options: ["To create documents", "To search the World Wide Web for specific information", "To send emails", "To play music"], answer: "To search the World Wide Web for specific information", explanation: "A search engine like Google or Bing is a software system that is designed to carry out web searches, which means to search the World Wide Web in a systematic way for particular information." },
+            { question: "What does 'download' mean?", options: ["To send data to a remote system", "To receive data from a remote system to a local system", "To close a program", "To update software"], answer: "To receive data from a remote system to a local system", explanation: "Downloading is the process of copying data from a main source (like a server on the internet) to your own device." },
+            { question: "Which of these is a 'desktop publishing' software?", options: ["MS Excel", "Adobe InDesign", "Windows Media Player", "Notepad"], answer: "Adobe InDesign", explanation: "Desktop publishing software like Adobe InDesign or CorelDraw is used to create high-quality documents with complex layouts, such as magazines, newspapers, and brochures." },
+            { question: "What is the purpose of the 'Caps Lock' key?", options: ["To delete text", "To type all letters as uppercase", "To insert a tab space", "To create a new line"], answer: "To type all letters as uppercase", explanation: "The Caps Lock key is a toggle key on a keyboard that, when activated, causes all letters to be typed in uppercase." },
+            { question: "Which of these is an example of a 'spreadsheet' application?", options: ["MS Word", "MS PowerPoint", "MS Excel", "MS Paint"], answer: "MS Excel", explanation: "Microsoft Excel is a popular spreadsheet program used for organizing, formatting, and calculating data with formulas." },
+            { question: "What does 'peripheral' mean in the context of computers?", options: ["A core component like the CPU", "An external device that connects to the computer", "A type of software", "A computer's internal memory"], answer: "An external device that connects to the computer", explanation: "A peripheral device is any auxiliary device that connects to and works with the computer in some way, such as a printer, scanner, or webcam." },
+            { question: "What is the function of a 'network utility'?", options: ["To create documents", "To check network connectivity and configuration", "To edit videos", "To play games"], answer: "To check network connectivity and configuration", explanation: "Network utilities are tools used to analyze and configure network settings, monitor traffic, and diagnose connectivity issues." },
+            { question: "What is a 'motherboard'?", options: ["The main memory of a computer", "The main printed circuit board in a computer", "The power supply unit", "The computer's case"], answer: "The main printed circuit board in a computer", explanation: "The motherboard is the central hub that connects all of the computer's components and allows them to communicate with each other." },
+            { question: "Which of these is a characteristic of 'SRAM' (Static RAM)?", options: ["It needs to be refreshed constantly", "It is slower than DRAM", "It is faster and more expensive than DRAM", "It is a type of permanent storage"], answer: "It is faster and more expensive than DRAM", explanation: "SRAM is a type of RAM that is faster and requires less power than DRAM because it does not need to be periodically refreshed to retain its data." },
+            { question: "What is the function of 'PROM' (Programmable Read-Only Memory)?", options: ["It can be reprogrammed many times", "It can be programmed once by the user", "It is volatile memory", "It is a type of CPU"], answer: "It can be programmed once by the user", explanation: "PROM is a type of ROM that can be written to (programmed) only once using a special device, after which its contents are permanent." },
+            { question: "What is a 'web host'?", options: ["A person who designs websites", "A company that provides space on a server to store website files", "A type of web browser", "A software for creating websites"], answer: "A company that provides space on a server to store website files", explanation: "A web host is a service that allows individuals and organizations to make their website accessible via the World Wide Web." },
+            { question: "Which of these is a 'relational operator' used by the ALU?", options: ["+", "-", "*", "=="], answer: "==", explanation: "Relational operators like '==' (equal to), '>', or '<' are used for logical comparisons, while +, -, and * are arithmetic operators." },
+            { question: "What is the purpose of 'presentation software' like MS PowerPoint?", options: ["To perform calculations", "To create and display a series of slides with information", "To manage a database", "To edit images"], answer: "To create and display a series of slides with information", explanation: "Presentation software is used to create slideshows that can include text, graphics, video, and other objects to present information to an audience." },
+            { question: "What does 'CMOS' stand for?", options: ["Complementary Metal-Oxide-Semiconductor", "Computer Main Operating System", "Central Memory Organization System", "Complex Micro-Operation Standard"], answer: "Complementary Metal-Oxide-Semiconductor", explanation: "CMOS is a technology for making low-power integrated circuits, and the term often refers to the battery-powered chip on the motherboard that stores BIOS settings." }
+        ];
+
+        let quizData = [];
+        const levels = [];
+        const LEVEL_SIZE = 25;
+
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+
+        const levelSelectionContainer = document.getElementById('level-selection-container');
+        const restartBtn = document.getElementById('restart-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const backToLevelsBtn = document.getElementById('back-to-levels-btn');
+
+        const questionCounterEl = document.getElementById('question-counter');
+        const timerEl = document.getElementById('timer');
+        const timerBarEl = document.getElementById('timer-bar');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const explanationContainerEl = document.getElementById('explanation-container');
+        const explanationTitleEl = document.getElementById('explanation-title');
+        const explanationTextEl = document.getElementById('explanation-text');
+        const scoreEl = document.getElementById('score');
+        const scoreDetailsEl = document.getElementById('score-details');
+        const resultsTitleEl = document.getElementById('results-title');
+
+        let currentLevelIndex = 0;
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer;
+        let timeLeft;
+        
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function setupLevels() {
+            for (let i = 0; i < allQuizData.length; i += LEVEL_SIZE) {
+                levels.push(allQuizData.slice(i, i + LEVEL_SIZE));
+            }
+        }
+
+        function displayLevels() {
+            levelSelectionContainer.innerHTML = '';
+            const unlockedLevel = parseInt(localStorage.getItem('unlockedLevel') || '1');
+            const completedLevels = JSON.parse(localStorage.getItem('completedLevels') || '[]');
+
+            levels.forEach((level, index) => {
+                const levelNum = index + 1;
+                const button = document.createElement('button');
+                button.classList.add('btn', 'level-btn');
+
+                let icon = '';
+                if (levelNum > unlockedLevel) {
+                    button.classList.add('locked');
+                    button.disabled = true;
+                    icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" /></svg>`;
+                } else if (completedLevels.includes(index)) {
+                    button.classList.add('completed');
+                    icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mb-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></svg>`;
+                } else {
+                    button.classList.add('unlocked');
+                }
+                
+                button.innerHTML = `${icon}Level ${levelNum}`;
+                
+                if (!button.disabled) {
+                    button.addEventListener('click', () => startQuiz(index));
+                }
+                levelSelectionContainer.appendChild(button);
+            });
+        }
+
+        function startQuiz(levelIndex) {
+            currentLevelIndex = levelIndex;
+            quizData = levels[levelIndex];
+            shuffleArray(quizData);
+            currentQuestionIndex = 0;
+            score = 0;
+            startScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            showQuestion();
+        }
+
+        function showQuestion() {
+            resetState();
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            questionCounterEl.innerText = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            questionTextEl.innerText = currentQuestion.question;
+
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.innerHTML = `<span class="font-bold mr-4">${String.fromCharCode(65 + currentQuestion.options.indexOf(option))}.</span> ${option}`;
+                button.classList.add('btn', 'option-btn', 'w-full', 'p-4', 'rounded-xl', 'text-lg', 'font-medium', 'text-gray-700', 'bg-white', 'hover:bg-gray-50');
+                button.addEventListener('click', selectAnswer);
+                optionsContainerEl.appendChild(button);
+            });
+            
+            startTimer();
+        }
+
+        function startTimer() {
+            timeLeft = 60;
+            timerEl.innerText = timeLeft;
+            timerBarEl.style.width = '100%';
+            timerBarEl.classList.remove('bg-red-500');
+            timerBarEl.classList.add('bg-indigo-600');
+
+
+            timer = setInterval(() => {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                timerBarEl.style.width = `${(timeLeft / 60) * 100}%`;
+
+                if (timeLeft < 10) {
+                    timerBarEl.classList.remove('bg-indigo-600');
+                    timerBarEl.classList.add('bg-red-500');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    showExplanation(false); // Mark as incorrect if time runs out
+                }
+            }, 1000);
+        }
+
+        function resetState() {
+            clearInterval(timer);
+            nextBtn.classList.add('hidden');
+            explanationContainerEl.classList.add('hidden');
+            while (optionsContainerEl.firstChild) {
+                optionsContainerEl.removeChild(optionsContainerEl.firstChild);
+            }
+        }
+
+        function selectAnswer(e) {
+            clearInterval(timer);
+            const selectedBtn = e.currentTarget;
+            const isCorrect = selectedBtn.innerText.includes(quizData[currentQuestionIndex].answer);
+            
+            if (isCorrect) {
+                score++;
+            }
+            showExplanation(isCorrect, selectedBtn);
+        }
+
+        function showExplanation(isCorrect, selectedBtn = null) {
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            Array.from(optionsContainerEl.children).forEach(button => {
+                button.disabled = true;
+                if (button.innerText.includes(currentQuestion.answer)) {
+                    button.classList.add('correct');
+                }
+            });
+
+            if (selectedBtn) {
+                 if (isCorrect) {
+                    selectedBtn.classList.add('correct');
+                    explanationTitleEl.innerText = "Correct! 🎉";
+                    explanationTitleEl.className = "text-xl font-bold mb-2 text-green-700";
+                } else {
+                    selectedBtn.classList.add('incorrect');
+                    explanationTitleEl.innerText = "Not quite... 🤔";
+                    explanationTitleEl.className = "text-xl font-bold mb-2 text-red-700";
+                }
+            } else { // Time ran out
+                explanationTitleEl.innerText = "Time's up! ⏰";
+                explanationTitleEl.className = "text-xl font-bold mb-2 text-yellow-700";
+            }
+
+            explanationTextEl.innerText = currentQuestion.explanation;
+            explanationContainerEl.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            const percentage = quizData.length > 0 ? Math.round((score / quizData.length) * 100) : 0;
+            scoreEl.innerText = `${percentage}%`;
+            scoreDetailsEl.innerText = `You answered ${score} out of ${quizData.length} questions correctly.`;
+
+            const PASSING_SCORE = 60;
+            if (percentage >= PASSING_SCORE) {
+                resultsTitleEl.innerText = "Level Complete!";
+                let unlockedLevel = parseInt(localStorage.getItem('unlockedLevel') || '1');
+                let completedLevels = JSON.parse(localStorage.getItem('completedLevels') || '[]');
+                
+                if (!completedLevels.includes(currentLevelIndex)) {
+                    completedLevels.push(currentLevelIndex);
+                    localStorage.setItem('completedLevels', JSON.stringify(completedLevels));
+                }
+
+                const nextLevel = currentLevelIndex + 2;
+                if (nextLevel > unlockedLevel && nextLevel <= levels.length) {
+                    localStorage.setItem('unlockedLevel', nextLevel.toString());
+                }
+            } else {
+                resultsTitleEl.innerText = "Try Again!";
+            }
+        }
+        
+        function showLevelScreen() {
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            displayLevels();
+        }
+
+        // Event Listeners
+        restartBtn.addEventListener('click', () => startQuiz(currentLevelIndex));
+        backToLevelsBtn.addEventListener('click', showLevelScreen);
+        
+        // Initial setup
+        setupLevels();
+        showLevelScreen();
+
+    </script>
+</body>
+</html>
