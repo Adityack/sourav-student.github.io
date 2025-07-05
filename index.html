@@ -547,6 +547,14 @@
         }
 
         // Event Listeners
+        nextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                showQuestion();
+            } else {
+                showResults();
+            }
+        });
         restartBtn.addEventListener('click', () => startQuiz(currentLevelIndex));
         backToLevelsBtn.addEventListener('click', showLevelScreen);
         
